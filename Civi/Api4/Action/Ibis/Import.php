@@ -37,7 +37,6 @@ class Import extends ImportBaseAction {
     $records = $stmt->process($csv);
     $contribution = [];
     $contributions = [];
-    $lines = [];
     foreach ($records as $record) {
       $date = date('Ymd', strtotime($record['Date']));
       if ($record['Line type'] === 'Pay') {
@@ -58,7 +57,7 @@ class Import extends ImportBaseAction {
         $contribution = [];
       }
       else {
-        if (empty($lines)) {
+        if (empty($contribution)) {
           $contribution = [
             'receive_date' => $date,
             'contact_id' => $patronBaseContactID,
