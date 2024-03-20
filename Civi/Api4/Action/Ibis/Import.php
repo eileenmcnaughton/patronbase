@@ -27,13 +27,12 @@ class Import extends ImportBaseAction {
     $csv = Reader::createFromPath($path, 'r');
     $csv->setHeaderOffset(0); //set the CSV header offset
 
-    //get 25 records starting from the 11th row
     $stmt = Statement::create()
-      ->offset(10)
+      ->offset(0)
       ->limit(2000)
     ;
 
-    $patronBaseContactID = $this->getPatronBaseContactID();
+    $patronBaseContactID = $this->getIbisContactID();
 
     $records = $stmt->process($csv);
     $contribution = [];

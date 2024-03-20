@@ -51,6 +51,27 @@ abstract class ImportBaseAction extends AbstractAction {
   }
 
   /**
+   * @return mixed|null
+   * @throws \CRM_Core_Exception
+   * @throws \Civi\API\Exception\UnauthorizedException
+   */
+  public function getIbisContactID() {
+    $contactID = Contact::get(FALSE)
+      ->addWhere('organization_name', '=', 'Ibis')
+      ->addWhere('contact_type', '=', 'Organization')
+      ->execute()->first()['id'] ?? NULL;
+
+    if (!$contactID) {
+      $contactID = Contact::create(FALSE)
+        ->setValues([
+          'organization_name' => 'Ibis',
+          'contact_type' => 'Organization',
+        ])->execute()->first()['id'];
+    }
+    return $contactID;
+  }
+
+  /**
    * @return \Civi\Api4\Generic\Result
    * @throws \CRM_Core_Exception
    * @throws \Civi\API\Exception\UnauthorizedException
