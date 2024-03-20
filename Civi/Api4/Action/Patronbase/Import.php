@@ -1,10 +1,8 @@
 <?php
 namespace Civi\Api4\Action\Patronbase;
 
-use Civi\Api4\Contact;
+use Civi\Api4\Action\ImportBaseAction;
 use Civi\Api4\EntityFinancialAccount;
-use Civi\Api4\FinancialAccount;
-use Civi\Api4\Generic\AbstractAction;
 use Civi\Api4\Generic\Result;
 use League\Csv\Reader;
 use League\Csv\Statement;
@@ -13,7 +11,7 @@ use League\Csv\Statement;
  *
  * @package Civi\Api4
  */
-class Import extends AbstractAction {
+class Import extends ImportBaseAction {
 
   /**
    * @inheritDoc
@@ -23,7 +21,7 @@ class Import extends AbstractAction {
    * @throws \API_Exception
    */
   public function _run(Result $result) {
-    $path = __DIR__ . '/../../../../patronbase.csv';
+    $path = __DIR__ . '/../../../../ImportFiles/patronbase.csv';
 
     $csv = Reader::createFromPath($path, 'r');
     $csv->setHeaderOffset(0); //set the CSV header offset
@@ -34,31 +32,12 @@ class Import extends AbstractAction {
       ->limit(2000)
     ;
 
-    $patronBaseContactID = Contact::get(FALSE)
-      ->addWhere('organization_name', '=', 'Patronbase')
-      ->addWhere('contact_type', '=', 'Organization')
-      ->execute()->first()['id'] ?? NULL;
-
-    if (!$patronBaseContactID) {
-      $patronBaseContactID = Contact::create(FALSE)
-        ->setValues([
-          'organization_name' => 'Patronbase',
-          'contact_type' => 'Organization',
-        ])->execute()->first()['id'];
-    }
+    $patronBaseContactID = $this->getPatronBaseContactID();
 
     $records = $stmt->process($csv);
     $contributions = [];
-    $financialAccounts = EntityFinancialAccount::get(FAlSE)
-      ->addWhere('entity_table', '=', 'civicrm_financial_type')
-      ->addSelect('entity_id')
-      ->addWhere('account_relationship:name', '=', 'Income Account is')
-      ->addSelect('account_relationship:name')
-      ->addSelect('financial_account_id.*')
-      ->addOrderBy('id', 'DESC')
-      ->execute()->indexBy('financial_account_id.accounting_code');
-    // hard-coded - sorry
-    $default = $financialAccounts['30023-1137']['entity_id'];
+    $financialAccounts = $this->getFinancialAccounts();
+    $default = $this->getDefaultFinancialTypeID();
     foreach ($records as $record) {
       $date = date('Ymd', strtotime(str_replace('/', '-', $record['Payment Date'])));
       $paymentType = $record['Payment Type'];
