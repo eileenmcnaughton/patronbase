@@ -2,8 +2,6 @@
 namespace Civi\Api4\Action\Ibis;
 
 use Civi\Api4\Action\ImportBaseAction;
-use Civi\Api4\Contact;
-use Civi\Api4\EntityFinancialAccount;
 use Civi\Api4\Generic\Result;
 use League\Csv\Reader;
 use League\Csv\Statement;
@@ -71,7 +69,7 @@ class Import extends ImportBaseAction {
           $record['Description'],
           $record['Item type'],
         ]);
-        $lineTotal = (float) \CRM_Utils_Rule::cleanMoney($record['Amount inc']);
+        $lineTotal = \CRM_Utils_Rule::cleanMoney($record['Amount inc']);
         if (str_starts_with($lineTotal, '(')) {
           $lineTotal = -substr($lineTotal, 1, -1);
         }
@@ -80,6 +78,7 @@ class Import extends ImportBaseAction {
           $quantity = -substr($quantity, 1, -1);
         }
         $quantity = (float) $quantity;
+        $lineTotal = (float) $lineTotal;
         $contribution['line_items'][] = [
           'line_item' => [
             [
