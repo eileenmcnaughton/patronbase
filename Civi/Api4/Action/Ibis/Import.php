@@ -85,7 +85,7 @@ class Import extends ImportBaseAction {
               'label' => implode(' - ', $details),
               'field_title' => implode('-', $details),
               'unit_price' => $lineTotal / $quantity,
-              'qty' => $record['Units'],
+              'qty' => $quantity,
               'line_total' => $lineTotal,
               'financial_type_id' => $this->getDefaultFinancialTypeID(),
             ]
