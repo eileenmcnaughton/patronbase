@@ -14,6 +14,8 @@ namespace Civi\Api4\Action;
 
 use Civi\Api4\Contact;
 use Civi\Api4\EntityFinancialAccount;
+use Civi\Api4\FinancialAccount;
+use Civi\Api4\FinancialType;
 use Civi\Api4\Generic\AbstractAction;
 use Civi\Api4\Generic\AbstractEntity;
 use Civi\Api4\Generic\Result;
@@ -95,7 +97,42 @@ abstract class ImportBaseAction extends AbstractAction {
    */
   public function getDefaultFinancialTypeID(): int {
     // hard-coded - sorry
-    return $this->getFinancialAccounts()['30023-1137']['entity_id'] ?? 3;
+    return $this->getFinancialAccount('30023-1137', 'stock sales');
+  }
+
+  /**
+   * @throws \CRM_Core_Exception
+   */
+  public function getFinancialAccount($code, $label) {
+    if (isset($this->getFinancialAccounts()[$code])) {
+      return $this->getFinancialAccounts()[$code]['entity_id'];
+    }
+    $account = FinancialAccount::create(FALSE)->setValues([
+      'accounting_code' => $code,
+      'label' => $code . $label,
+      'name' => $code,
+      'account_type_code' => 'Inc',
+    ])->execute()->first();
+    $financialType = FinancialType::create(FALSE)->setValues([
+      'accounting_code' => $code,
+      'label' => $label,
+      'name' => $label
+    ])->execute()->first();
+    $entityFinancialAccounts = EntityFinancialAccount::get(FALSE)
+      ->addWhere('entity_id', '=', $financialType['id'])
+      ->addWhere('account_relationship:name', '=', 'Income Account is')
+      ->addSelect('*', 'account_relationship:name')
+      ->addWhere('entity_table', '=', 'civicrm_financial_type')
+      ->execute()->indexBy('account_relationship:name');
+    foreach ($entityFinancialAccounts as $entityFinancialAccount) {
+      $entityFinancialAccount['entity_id'] = $financialType['id'];
+      $entityFinancialAccount['financial_account_id'] = $account['id'];
+      EntityFinancialAccount::update(FALSE)->setValues(
+        $entityFinancialAccount
+      )->execute();
+    }
+    $this->financialAccounts[$code] = ['entity_id' => $financialType['id']];
+    return $financialType['id'];
   }
 
 }
