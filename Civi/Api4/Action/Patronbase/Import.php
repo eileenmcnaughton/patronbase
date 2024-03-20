@@ -61,12 +61,16 @@ class Import extends AbstractAction {
     $default = $financialAccounts['30023-1137']['entity_id'];
     foreach ($records as $record) {
       $date = date('Ymd', strtotime(str_replace('/', '-', $record['Payment Date'])));
-      $key = $date . ' - ' . $record['Payment Type'];
+      $paymentType = $record['Payment Type'];
+      if (in_array($paymentType, ['Mastercard', 'Visa'], TRUE)) {
+        $paymentType = 'Online Card';
+      }
+      $key = $date . ' - ' . $paymentType;
       $financialTypeID = $financialAccounts[$record['Account Code']]['entity_id'] ?? $default;
       if (!array_key_exists($key, $contributions)) {
         $contributions[$key] = [
           'receive_date' => $date,
-          'payment_instrument_id:name' => $record['Payment Type'],
+          'payment_instrument_id:name' => $paymentType,
           'contact_id' => $patronBaseContactID,
           'line_item' => [],
           'invoice_id' => $key,
