@@ -51,7 +51,7 @@ class Import extends ImportBaseAction {
           'line_item' => [],
           'invoice_id' => $key,
           'financial_type_id' => $financialTypeID,
-          'source' => $key . ' Patron base import ',
+          'source' => $key . ' Patronbase import ',
           'contribution_status_id:name' => 'Completed',
         ];
       }
