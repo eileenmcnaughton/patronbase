@@ -70,12 +70,15 @@ class Import extends ImportBaseAction {
           $record['Item type'],
         ]);
         $lineTotal = \CRM_Utils_Rule::cleanMoney($record['Amount inc']);
+        $isNegative = FALSE;
         if (str_starts_with($lineTotal, '(')) {
+          $isNegative = TRUE;
           $lineTotal = -substr($lineTotal, 1, -1);
         }
         $quantity = $record['Units'];
         if (str_starts_with($quantity, '(')) {
-          $quantity = -substr($quantity, 1, -1);
+          $isNegative = TRUE;
+          $quantity = substr($quantity, 1, -1);
         }
         $quantity = (float) $quantity;
         $lineTotal = (float) $lineTotal;
