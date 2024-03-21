@@ -38,7 +38,7 @@ class Import extends ImportBaseAction {
     foreach ($records as $record) {
       $date = date('Ymd', strtotime(str_replace('/', '-', $record['Payment Date'])));
       $paymentType = $record['Payment Type'];
-      if (in_array($paymentType, ['Mastercard', 'Visa', 'WeChat'], TRUE)) {
+      if (in_array($paymentType, ['Mastercard', 'Visa', 'WeChat', 'Amex'], TRUE)) {
         $paymentType = 'Online Card';
       }
       $key = $date . ' - ' . $paymentType;
