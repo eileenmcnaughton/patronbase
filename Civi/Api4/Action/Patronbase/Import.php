@@ -34,7 +34,6 @@ class Import extends ImportBaseAction {
 
     $records = $stmt->process($csv);
     $contributions = [];
-    $financialAccounts = $this->getFinancialAccounts();
     $default = $this->getDefaultFinancialTypeID();
     foreach ($records as $record) {
       $date = date('Ymd', strtotime(str_replace('/', '-', $record['Payment Date'])));
@@ -43,7 +42,7 @@ class Import extends ImportBaseAction {
         $paymentType = 'Online Card';
       }
       $key = $date . ' - ' . $paymentType;
-      $financialTypeID = $financialAccounts[$record['Account Code']]['entity_id'] ?? $default;
+      $financialTypeID = empty($record['Account Code']) ? $default : $this->getFinancialAccount($record['Account Code'], $record['Description']);
       if (!array_key_exists($key, $contributions)) {
         $contributions[$key] = [
           'receive_date' => $date,

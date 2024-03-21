@@ -103,7 +103,7 @@ abstract class ImportBaseAction extends AbstractAction {
   /**
    * @throws \CRM_Core_Exception
    */
-  public function getFinancialAccount($code, $label) {
+  public function getFinancialAccount(string $code, string $label) {
     if (isset($this->getFinancialAccounts()[$code])) {
       return $this->getFinancialAccounts()[$code]['entity_id'];
     }
