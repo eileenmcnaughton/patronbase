@@ -37,7 +37,7 @@ class Import extends ImportBaseAction {
     $contribution = [];
     $contributions = [];
     $rows = [];
-    $lastKey = -1;
+
     foreach ($records as $record) {
       $record['payment_type'] = $record['Line type'] !== 'Pay' ? '' : ($record['Description'] === '1. Cash' ? 'Cash' : 'EFT');
       $lineTotal = \CRM_Utils_Rule::cleanMoney($record['Amount inc']);
@@ -144,7 +144,7 @@ class Import extends ImportBaseAction {
         \civicrm_api3('Payment', 'create', [
           'contribution_id' => $order['id'],
           'total_amount' => $order['values'][$order['id']]['total_amount'],
-          'payment_instrument_id' => 1,
+          'payment_instrument_id' => \CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'payment_instrument_id', $contribution['payment_instrument_id:name']),
         ]);
       }
       catch (\CRM_Core_Exception $e) {

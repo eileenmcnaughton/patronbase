@@ -80,7 +80,7 @@ class Import extends ImportBaseAction {
         \civicrm_api3('Payment', 'create', [
           'contribution_id' => $order['id'],
           'total_amount' => $order['values'][$order['id']]['total_amount'],
-          'payment_instrument_id' => 1,
+          'payment_instrument_id' => \CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'payment_instrument_id', $contribution['payment_instrument_id:name']),
         ]);
       }
       catch (\CRM_Core_Exception $e) {
