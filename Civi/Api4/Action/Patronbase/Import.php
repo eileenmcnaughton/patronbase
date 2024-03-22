@@ -30,12 +30,15 @@ class Import extends ImportBaseAction {
       ->limit(2000)
     ;
 
-
     $records = $stmt->process($csv);
     $contributions = [];
     $default = $this->getDefaultFinancialTypeID();
     foreach ($records as $record) {
       $date = date('Ymd', strtotime(str_replace('/', '-', $record['Payment Date'])));
+      $hourMinute = (int) date('Hi', strtotime(str_replace('/', '-', $record['Payment Date'])));
+      if ($hourMinute > 2200) {
+        $date = date('Ymd', strtotime('+ 1 day', strtotime($date)));
+      }
       $paymentType = $record['Payment Type'];
       if (in_array($paymentType, ['Mastercard', 'Visa', 'WeChat', 'Amex'], TRUE)) {
         $paymentType = 'Online Card';
