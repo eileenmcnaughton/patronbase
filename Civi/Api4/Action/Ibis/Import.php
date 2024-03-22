@@ -29,7 +29,7 @@ class Import extends ImportBaseAction {
 
     $stmt = Statement::create()
       ->offset(0)
-      ->limit(2000);
+      ->limit(200000);
 
     $patronBaseContactID = $this->getIbisContactID();
 
