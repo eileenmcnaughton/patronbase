@@ -12,6 +12,8 @@ use League\Csv\Statement;
  */
 class Import extends ImportBaseAction {
 
+  public $directory = __DIR__ . '/../../../../ImportFiles';
+
   /**
    * @inheritDoc
    *
@@ -20,7 +22,7 @@ class Import extends ImportBaseAction {
    * @throws \API_Exception
    */
   public function _run(Result $result) {
-    $path = __DIR__ . '/../../../../ImportFiles/ibis.csv';
+    $path = $this->getDirectory() . '/ibis.csv';
 
     $csv = Reader::createFromPath($path, 'r');
     $csv->setHeaderOffset(0); //set the CSV header offset
@@ -92,19 +94,25 @@ class Import extends ImportBaseAction {
                 $lineItem['label'] = 'split payment ' . $lineItem['label'];
                 $partialLine = $lineItem;
                 $partialLine['line_total'] += $record['line_total'];
-                $lineItem['line_total'] = $lineItem['line_total'] - $partialLine['line_total'];
+                $partialLine['unit_price'] = $partialLine['line_total'] / $partialLine['qty'];
+                $lineItem['line_total'] -= $partialLine['line_total'];
+                $lineItem['unit_price'] = $lineItem['line_total'] / $lineItem['qty'];
                 $contributions[$key]['line_items'][]['line_item'][] = $lineItem;
                 $partialLines[] = $partialLine;
               }
             }
             $toAllocate += $lineItem['line_total'];
           }
+          else {
+            // The payment is all allocated - pass over to the next payment.
+            $partialLines[] = $lineItem;
+          }
         }
-        $partialLines = [];
         $lineItems = [];
         $contribution = [];
       }
       else {
+        $partialLines = [];
         if (empty($contribution)) {
           $contribution = [
             'receive_date' => $date,
@@ -148,6 +156,15 @@ class Import extends ImportBaseAction {
 
   public function fields() {
     return [];
+  }
+
+  public function getDirectory(): string {
+    return $this->directory;
+  }
+
+  public function setDirectory(string $directory): self {
+    $this->directory = $directory;
+    return $this;
   }
 
 }

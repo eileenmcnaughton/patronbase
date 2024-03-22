@@ -1,0 +1,23 @@
+Date,Time,Line type,PLU,Description,Status,Transaction type,Void,Item type,Location,Till,User,Amount ex,Tax,Units,Amount inc
+Thu 7 Mar 2024,10:19 AM,Item,2370,WV Calendar 2024 Large Architecture,Posted,Sale,False,Stock,Shop,RETAIL1,LC,$29.13,$4.37,1,$33.50
+Thu 7 Mar 2024,10:19 AM,Item,2375,WV Agenda 2024 Resurrection of Arch,Posted,Sale,False,Stock,Shop,RETAIL1,LC,$19.12,$2.87,1,$21.99
+Thu 7 Mar 2024,10:19 AM,Pay,,2. Eftpos,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,($55.49)
+Thu 7 Mar 2024,11:20 AM,Item,2183,HAC Catalogue 1973 - 2000,Posted,Sale,False,Stock,Shop,RETAIL1,LC,$19.99,$3.00,1,$22.99
+Thu 7 Mar 2024,11:20 AM,Pay,,1. Cash,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,$0.01
+Thu 7 Mar 2024,11:20 AM,Pay,,1. Cash,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,($23.00)
+Thu 7 Mar 2024,12:27 PM,Item,1310,GJ Badges/Fridge Mag Astd,Posted,Sale,False,Stock,Shop,RETAIL1,LC,$15.65,$2.35,1,$18.00
+Thu 7 Mar 2024,12:27 PM,Item,1371,WV Book Mark 686 GMC,Posted,Sale,False,Stock,Shop,RETAIL1,LC,$7.82,$1.17,1,$8.99
+Thu 7 Mar 2024,12:27 PM,Pay,,1. Cash,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,($6.80)
+Thu 7 Mar 2024,12:27 PM,Pay,,2. Eftpos,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,($20.19)
+Thu 7 Mar 2024,12:28 PM,Item,1646,WV Print Arch Noah 2000 KD-775A-KL,Posted,Sale,False,Stock,Shop,RETAIL1,LC,$69.57,$10.43,1,$80.00
+Thu 7 Mar 2024,12:28 PM,Item,1645,WV Print SaveTheRain KD-690A-ad,Posted,Sale,False,Stock,Shop,RETAIL1,LC,$69.57,$10.43,1,$80.00
+Thu 7 Mar 2024,12:28 PM,Pay,,2. Eftpos,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,($160.00)
+Thu 7 Mar 2024,12:34 PM,Item,1575,ZS Shirt Blk Rain W Sml,Posted,Sale,False,Stock,Shop,RETAIL1,LC,$68.70,$10.30,1,$79.00
+Thu 7 Mar 2024,12:34 PM,Pay,,2. Eftpos,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,($79.00)
+Thu 7 Mar 2024,12:47 PM,Item,1304,GJ Scarf Long Song Of Whales,Posted,Sale,False,Stock,Shop,RETAIL1,LC,$380.87,$57.13,1,$438.00
+Thu 7 Mar 2024,12:47 PM,Item,1513,NWB The House Of Happy Spirits,Posted,Sale,False,Stock,Shop,RETAIL1,LC,$30.43,$4.57,1,$35.00
+Thu 7 Mar 2024,12:47 PM,Item,1471,WV Passe P Imagine 944C,Posted,Sale,False,Stock,Shop,RETAIL1,LC,$47.82,$7.17,1,$54.99
+Thu 7 Mar 2024,12:47 PM,Pay,,1. Cash,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,($200.00)
+Thu 7 Mar 2024,12:47 PM,Pay,,2. Eftpos,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,($327.99)
+Thu 7 Mar 2024,12:48 PM,Item,1555,ZS Magnet SnailHouses,Posted,Sale,False,Stock,Shop,RETAIL1,LC,$10.87,$1.63,1,$12.50
+Thu 7 Mar 2024,12:48 PM,Pay,,2. Eftpos,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,($12.50)

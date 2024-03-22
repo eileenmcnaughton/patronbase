@@ -1,5 +1,6 @@
 <?php
 
+use Civi\Api4\Contribution;
 use Civi\Api4\Ibis;
 use Civi\Test;
 use CRM_Patronbase_ExtensionUtil as E;
@@ -54,7 +55,18 @@ class IbisTest extends TestCase implements HeadlessInterface, HookInterface, Tra
    * Test import.
    */
   public function testImport():void {
-    Ibis::import(FALSE)->execute();
+    Ibis::import(FALSE)->setDirectory(__DIR__ . '/data')->execute();
+    $contributions = Contribution::get(FALSE)->addWhere('contact_id.organization_name', '=', 'Ibis')
+      ->execute();
+    $this->assertCount(2, $contributions);
+    foreach ($contributions as $contribution) {
+      if ($contribution['invoice_id'] === '20240307 - Cash') {
+        $this->assertEquals(229.79, $contribution['total_amount']);
+      }
+      else {
+        $this->assertEquals(655.17, $contribution['total_amount']);
+      }
+    }
   }
 
 }
