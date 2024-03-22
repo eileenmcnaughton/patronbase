@@ -55,11 +55,22 @@ class Import extends ImportBaseAction {
       }
       $record['quantity'] = (float) $quantity;
       $record['date'] = date('Ymd', strtotime($record['Date']));
-      if ($record['payment_type'] && ($lastRecord['payment_type'] ?? '') === $record['payment_type']) {
-        // 2 payment rows for the same type, combine
-        // Remove the last record
-        $lastRecord = array_pop($rows);
-        $record['line_total'] += $lastRecord['line_total'];
+      if ($record['payment_type'] && !empty($lastRecord['payment_type'])) {
+        if ($lastRecord['payment_type'] === $record['payment_type']) {
+          // 2 payment rows for the same type, combine
+          // Remove the last record
+          $lastRecord = array_pop($rows);
+          $record['line_total'] += $lastRecord['line_total'];
+        }
+        if ($lastRecord['payment_type'] === 'EFT' && $record['payment_type'] === 'Cash') {
+          // Cash needs to come first cos there could be cash-out involved so we need
+          // to start with cash & allocate it all & then allocated EFT as needed.
+          $removedRecord = array_pop($rows);
+          $rows[] = $record;
+          $rows[] = $removedRecord;
+          $lastRecord = $record;
+          continue;
+        }
       }
       $lastRecord = $record;
       $rows[] = $record;
