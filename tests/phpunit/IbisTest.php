@@ -58,15 +58,14 @@ class IbisTest extends TestCase implements HeadlessInterface, HookInterface, Tra
     Ibis::import(FALSE)->setDirectory(__DIR__ . '/data')->execute();
     $contributions = Contribution::get(FALSE)->addWhere('contact_id.organization_name', '=', 'Ibis')
       ->execute();
-    $this->assertCount(2, $contributions);
+    $this->assertCount(1, $contributions);
     foreach ($contributions as $contribution) {
-      if ($contribution['invoice_id'] === '20240307 - Cash') {
-        $this->assertEquals(229.79, $contribution['total_amount']);
-      }
-      else {
-        $this->assertEquals(655.17, $contribution['total_amount']);
-      }
+      $this->assertEquals(655.17, $contribution['total_amount']);
     }
+    $contributions = Contribution::get(FALSE)->addWhere('contact_id.organization_name', '=', 'Ibis (Cash)')
+      ->execute();
+    $this->assertCount(1, $contributions);
+    $this->assertEquals(229.79, $contribution['total_amount']);
   }
 
 }

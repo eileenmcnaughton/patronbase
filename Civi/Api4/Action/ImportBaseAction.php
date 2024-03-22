@@ -37,19 +37,7 @@ abstract class ImportBaseAction extends AbstractAction {
    * @throws \Civi\API\Exception\UnauthorizedException
    */
   public function getPatronBaseContactID() {
-    $patronBaseContactID = Contact::get(FALSE)
-      ->addWhere('organization_name', '=', 'Patronbase')
-      ->addWhere('contact_type', '=', 'Organization')
-      ->execute()->first()['id'] ?? NULL;
-
-    if (!$patronBaseContactID) {
-      $patronBaseContactID = Contact::create(FALSE)
-        ->setValues([
-          'organization_name' => 'Patronbase',
-          'contact_type' => 'Organization',
-        ])->execute()->first()['id'];
-    }
-    return $patronBaseContactID;
+    return $this->getContactID('Patronbase');
   }
 
   /**
@@ -58,19 +46,16 @@ abstract class ImportBaseAction extends AbstractAction {
    * @throws \Civi\API\Exception\UnauthorizedException
    */
   public function getIbisContactID() {
-    $contactID = Contact::get(FALSE)
-      ->addWhere('organization_name', '=', 'Ibis')
-      ->addWhere('contact_type', '=', 'Organization')
-      ->execute()->first()['id'] ?? NULL;
+    return $this->getContactID('Ibis');
+  }
 
-    if (!$contactID) {
-      $contactID = Contact::create(FALSE)
-        ->setValues([
-          'organization_name' => 'Ibis',
-          'contact_type' => 'Organization',
-        ])->execute()->first()['id'];
-    }
-    return $contactID;
+  /**
+   * @return mixed|null
+   * @throws \CRM_Core_Exception
+   * @throws \Civi\API\Exception\UnauthorizedException
+   */
+  public function getIbisCashContactID() {
+    return $this->getContactID('Ibis (Cash)');
   }
 
   /**
@@ -133,6 +118,29 @@ abstract class ImportBaseAction extends AbstractAction {
     }
     $this->financialAccounts[$code] = ['entity_id' => $financialType['id']];
     return $financialType['id'];
+  }
+
+  /**
+   * @param string $name
+   *
+   * @return mixed|null
+   * @throws \CRM_Core_Exception
+   * @throws \Civi\API\Exception\UnauthorizedException
+   */
+  public function getContactID(string $name) {
+    $contactID = Contact::get(FALSE)
+      ->addWhere('organization_name', '=', $name)
+      ->addWhere('contact_type', '=', 'Organization')
+      ->execute()->first()['id'] ?? NULL;
+
+    if (!$contactID) {
+      $contactID = Contact::create(FALSE)
+        ->setValues([
+          'organization_name' => $name,
+          'contact_type' => 'Organization',
+        ])->execute()->first()['id'];
+    }
+    return $contactID;
   }
 
 }

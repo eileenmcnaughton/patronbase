@@ -62,7 +62,6 @@ class Import extends ImportBaseAction {
         $record['line_total'] += $lastRecord['line_total'];
       }
       $lastRecord = $record;
-      $lastKey = array_key_last($rows);
       $rows[] = $record;
     }
     $lineItems = [];
@@ -73,6 +72,7 @@ class Import extends ImportBaseAction {
         // The last line in each transaction is the payment line.
         $paymentType = $record['Description'] === '1. Cash' ? 'Cash' : 'EFT';
         $contribution['payment_instrument_id:name'] = $paymentType;
+        $contribution['contact_id'] = $paymentType === 'Cash' ? $this->getIbisCashContactID() : $this->getIbisContactID();
         $key = $date . ' - ' . $paymentType;
         $contribution['source'] = $key . ' Ibis import ';
         $contribution['invoice_id'] = $key;
