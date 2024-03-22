@@ -27,16 +27,46 @@ class Import extends ImportBaseAction {
 
     $stmt = Statement::create()
       ->offset(0)
-      ->limit(2000)
-    ;
+      ->limit(2000);
 
     $patronBaseContactID = $this->getIbisContactID();
 
     $records = $stmt->process($csv);
     $contribution = [];
     $contributions = [];
+    $rows = [];
+    $lastKey = -1;
     foreach ($records as $record) {
-      $date = date('Ymd', strtotime($record['Date']));
+      $record['payment_type'] = $record['Line type'] !== 'Pay' ? '' : ($record['Description'] === '1. Cash' ? 'Cash' : 'EFT');
+      $lineTotal = \CRM_Utils_Rule::cleanMoney($record['Amount inc']);
+      if (str_starts_with($lineTotal, '(')) {
+        $lineTotal = -substr($lineTotal, 1, -1);
+      }
+      if (str_starts_with($lineTotal, '(')) {
+        $lineTotal = -substr($lineTotal, 1, -1);
+      }
+      $record['line_total'] = (float) $lineTotal;
+
+      $quantity = $record['Units'];
+      if (str_starts_with($quantity, '(')) {
+        $quantity = substr($quantity, 1, -1);
+      }
+      $record['quantity'] = (float) $quantity;
+      $record['date'] = date('Ymd', strtotime($record['Date']));
+      if ($record['payment_type'] && ($lastRecord['payment_type'] ?? '') === $record['payment_type']) {
+        // 2 payment rows for the same type, combine
+        // Remove the last record
+        $lastRecord = array_pop($rows);
+        $record['line_total'] += $lastRecord['line_total'];
+      }
+      $lastRecord = $record;
+      $lastKey = array_key_last($rows);
+      $rows[] = $record;
+    }
+    $lineItems = [];
+    $partialLines = [];
+    foreach ($rows as $record) {
+      $date = $record['date'];
       if ($record['Line type'] === 'Pay') {
         // The last line in each transaction is the payment line.
         $paymentType = $record['Description'] === '1. Cash' ? 'Cash' : 'EFT';
@@ -44,14 +74,34 @@ class Import extends ImportBaseAction {
         $key = $date . ' - ' . $paymentType;
         $contribution['source'] = $key . ' Ibis import ';
         $contribution['invoice_id'] = $key;
+
         if (!array_key_exists($key, $contributions)) {
           $contributions[$key] = $contribution;
         }
-        elseif (!empty($contribution['line_items'])) {
-          foreach ($contribution['line_items'] as $line_item) {
-            $contributions[$key]['line_items'][] = $line_item;
+        $toAllocate = $record['line_total'];
+
+        foreach (array_merge($lineItems, $partialLines) as $lineItem) {
+          if (round($toAllocate, 2) !== 0.0) {
+            $diff = round($lineItem['line_total'] + $toAllocate, 2);
+            if ($diff <= 0.0) {
+              $contributions[$key]['line_items'][]['line_item'][] = $lineItem;
+            }
+            else {
+              if ($diff > 0) {
+                // This payment covers part of the line,
+                $lineItem['label'] = 'split payment ' . $lineItem['label'];
+                $partialLine = $lineItem;
+                $partialLine['line_total'] += $record['line_total'];
+                $lineItem['line_total'] = $lineItem['line_total'] - $partialLine['line_total'];
+                $contributions[$key]['line_items'][]['line_item'][] = $lineItem;
+                $partialLines[] = $partialLine;
+              }
+            }
+            $toAllocate += $lineItem['line_total'];
           }
         }
+        $partialLines = [];
+        $lineItems = [];
         $contribution = [];
       }
       else {
@@ -69,28 +119,14 @@ class Import extends ImportBaseAction {
           $record['Description'],
           $record['Item type'],
         ]);
-        $lineTotal = \CRM_Utils_Rule::cleanMoney($record['Amount inc']);
 
-        if (str_starts_with($lineTotal, '(')) {
-          $lineTotal = -substr($lineTotal, 1, -1);
-        }
-        $quantity = $record['Units'];
-        if (str_starts_with($quantity, '(')) {
-          $quantity = substr($quantity, 1, -1);
-        }
-        $quantity = (float) $quantity;
-        $lineTotal = (float) $lineTotal;
-        $contribution['line_items'][] = [
-          'line_item' => [
-            [
-              'label' => implode(' - ', $details),
-              'field_title' => implode('-', $details),
-              'unit_price' => $lineTotal / $quantity,
-              'qty' => $quantity,
-              'line_total' => $lineTotal,
-              'financial_type_id' => $this->getDefaultFinancialTypeID(),
-            ]
-          ]
+        $lineItems[] = [
+            'label' => implode(' - ', $details),
+            'field_title' => implode('-', $details),
+            'unit_price' => $record['line_total'] / $record['quantity'],
+            'qty' => $record['quantity'],
+            'line_total' => $record['line_total'],
+            'financial_type_id' => $this->getDefaultFinancialTypeID(),
         ];
       }
     }
