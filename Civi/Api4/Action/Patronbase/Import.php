@@ -30,7 +30,6 @@ class Import extends ImportBaseAction {
       ->limit(2000)
     ;
 
-    $patronBaseContactID = $this->getPatronBaseContactID();
 
     $records = $stmt->process($csv);
     $contributions = [];
@@ -47,7 +46,7 @@ class Import extends ImportBaseAction {
         $contributions[$key] = [
           'receive_date' => $date,
           'payment_instrument_id:name' => $paymentType,
-          'contact_id' => $patronBaseContactID,
+          'contact_id' => $paymentType !== 'Cash' ? $this->getPatronBaseContactID() : $this->getContactID('Patronbase (cash)'),
           'line_item' => [],
           'invoice_id' => $key,
           'financial_type_id' => $financialTypeID,
