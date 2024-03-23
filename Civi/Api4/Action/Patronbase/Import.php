@@ -21,7 +21,7 @@ class Import extends ImportBaseAction {
    * @throws \API_Exception
    */
   public function _run(Result $result) {
-    $path = __DIR__ . '/../../../../ImportFiles/patronbase.csv';
+    $path = $this->getDirectory() . '/patronbase.csv';
 
     $csv = Reader::createFromPath($path, 'r');
     $csv->setHeaderOffset(0); //set the CSV header offset

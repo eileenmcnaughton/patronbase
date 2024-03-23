@@ -20,7 +20,7 @@ class Download extends ImportBaseAction {
    * @param \Civi\Api4\Generic\Result $result
    */
   public function _run(Result $result) {
-    $path = __DIR__ . '/../../../../ImportFiles/';
+    $path = $this->getPath();
 
     // retrieve the emails
     try {
@@ -64,6 +64,13 @@ class Download extends ImportBaseAction {
 
   public function fields() {
     return [];
+  }
+
+  /**
+   * @return false|mixed|string
+   */
+  public function getPath() {
+    return \Civi::paths()->getPath('[civicrm.files]/upload/');
   }
 
 }

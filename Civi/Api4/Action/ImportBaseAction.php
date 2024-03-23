@@ -143,4 +143,10 @@ abstract class ImportBaseAction extends AbstractAction {
     return $contactID;
   }
 
+
+  public function getDirectory(): string {
+    return $this->directory ?: \Civi::paths()->getPath('[civicrm.files]/upload/');
+  }
+
+
 }

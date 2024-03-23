@@ -173,10 +173,6 @@ class Import extends ImportBaseAction {
     return [];
   }
 
-  public function getDirectory(): string {
-    return $this->directory;
-  }
-
   public function setDirectory(string $directory): self {
     $this->directory = $directory;
     return $this;
