@@ -56,7 +56,8 @@ class Import extends ImportBaseAction {
           'payment_instrument_id:name' => $paymentInstrument,
           'contact_id' => $paymentType !== 'Cash' ? $this->getPatronBaseContactID() : $this->getContactID('Patronbase (cash)'),
           'line_item' => [],
-          'invoice_id' => $key,
+          // temporarily only include patronbase for cash.
+          'invoice_id' => $paymentType === 'Cash' ? 'patronbase_' . $key : $key,
           'financial_type_id' => $financialTypeID,
           'source' => $key . ' Patronbase import ',
           'contribution_status_id:name' => 'Completed',
