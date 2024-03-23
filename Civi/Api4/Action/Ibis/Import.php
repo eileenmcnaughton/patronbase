@@ -39,6 +39,10 @@ class Import extends ImportBaseAction {
     $rows = [];
 
     foreach ($records as $record) {
+      if ($record['Status'] !== 'Posted') {
+        // wtf is this - skip
+        continue;
+      }
       $record['payment_type'] = $record['Line type'] !== 'Pay' ? '' : ($record['Description'] === '1. Cash' ? 'Cash' : 'EFT');
       $lineTotal = \CRM_Utils_Rule::cleanMoney($record['Amount inc']);
       if (str_starts_with($lineTotal, '(')) {
