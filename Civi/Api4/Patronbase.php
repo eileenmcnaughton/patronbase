@@ -12,6 +12,7 @@
 
 namespace Civi\Api4;
 
+use Civi\Api4\Action\Patronbase\Download;
 use Civi\Api4\Action\Patronbase\Import;
 use Civi\Api4\Generic\AbstractEntity;
 use Civi\Api4\Generic\BasicGetFieldsAction;
@@ -33,7 +34,16 @@ class Patronbase extends AbstractEntity {
       ->setCheckPermissions($checkPermissions);
   }
 
-
+  /**
+   *
+   * @param bool $checkPermissions
+   *
+   * @return \Civi\Api4\Action\Patronbase\Download
+   */
+  public static function download(bool $checkPermissions = TRUE): Download {
+    return (new Download(__CLASS__, __FUNCTION__))
+      ->setCheckPermissions($checkPermissions);
+  }
 
   /**
    * @return \Civi\Api4\Generic\BasicGetFieldsAction

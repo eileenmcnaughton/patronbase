@@ -27,10 +27,10 @@ class Import extends ImportBaseAction {
     $csv->setHeaderOffset(0); //set the CSV header offset
     $stmt = Statement::create()
       ->offset(0)
-      ->limit(200000)
-    ;
+      ->limit(200000);
 
     $records = $stmt->process($csv);
+
     $contributions = [];
     $default = $this->getDefaultFinancialTypeID();
     foreach ($records as $record) {
