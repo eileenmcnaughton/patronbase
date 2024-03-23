@@ -90,7 +90,7 @@ class Import extends ImportBaseAction {
         $contribution['contact_id'] = $paymentType === 'Cash' ? $this->getIbisCashContactID() : $this->getIbisContactID();
         $key = $date . ' - ' . $paymentType;
         $contribution['source'] = $key . ' Ibis import ';
-        $contribution['invoice_id'] = $key;
+        $contribution['invoice_id'] = 'ibis_' . $key;
 
         if (!array_key_exists($key, $contributions)) {
           $contributions[$key] = $contribution;
