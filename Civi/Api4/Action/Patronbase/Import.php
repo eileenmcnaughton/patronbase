@@ -27,7 +27,7 @@ class Import extends ImportBaseAction {
     $csv->setHeaderOffset(0); //set the CSV header offset
     $stmt = Statement::create()
       ->offset(0)
-      ->limit(2000)
+      ->limit(200000)
     ;
 
     $records = $stmt->process($csv);
@@ -40,15 +40,20 @@ class Import extends ImportBaseAction {
         $date = date('Ymd', strtotime('+ 1 day', strtotime($date)));
       }
       $paymentType = $record['Payment Type'];
+      if ($paymentType === 'AEftpos') {
+        $paymentType = 'EFT';
+      }
+      $paymentInstrument = $paymentType;
       if (in_array($paymentType, ['Mastercard', 'Visa', 'WeChat', 'Amex'], TRUE)) {
         $paymentType = 'Online Card';
+        $paymentInstrument = 'Credit Card';
       }
       $key = $date . ' - ' . $paymentType;
       $financialTypeID = empty($record['Account Code']) ? $default : $this->getFinancialAccount($record['Account Code'], $record['Description']);
       if (!array_key_exists($key, $contributions)) {
         $contributions[$key] = [
           'receive_date' => $date,
-          'payment_instrument_id:name' => $paymentType,
+          'payment_instrument_id:name' => $paymentInstrument,
           'contact_id' => $paymentType !== 'Cash' ? $this->getPatronBaseContactID() : $this->getContactID('Patronbase (cash)'),
           'line_item' => [],
           'invoice_id' => $key,
