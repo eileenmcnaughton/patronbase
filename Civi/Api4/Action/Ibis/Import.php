@@ -12,8 +12,6 @@ use League\Csv\Statement;
  */
 class Import extends ImportBaseAction {
 
-  public $directory = __DIR__ . '/../../../../ImportFiles';
-
   /**
    * @inheritDoc
    *

@@ -26,6 +26,8 @@ use Civi\Api4\Generic\Result;
  */
 abstract class ImportBaseAction extends AbstractAction {
 
+  public string $directory = '';
+
   /**
    * @var \Civi\Api4\Generic\Result
    */
