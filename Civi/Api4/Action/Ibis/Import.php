@@ -23,7 +23,7 @@ class Import extends ImportBaseAction {
    */
   public function _run(Result $result) {
     $path = $this->getDirectory() . '/ibis.csv';
-
+    \Civi::log('ibis')->info('loading file ' . $path);
     $csv = Reader::createFromPath($path, 'r');
     $csv->setHeaderOffset(0); //set the CSV header offset
 
