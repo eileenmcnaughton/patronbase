@@ -50,6 +50,9 @@ class Import extends ImportBaseAction {
       }
       $key = $date . ' - ' . $paymentType;
       $financialTypeID = empty($record['Account Code']) ? $default : $this->getFinancialAccount($record['Account Code'], $record['Description']);
+      if ($financialTypeID === '30023-1137') {
+        $financialTypeID = '30023-1138';
+      }
       if (!array_key_exists($key, $contributions)) {
         $contributions[$key] = [
           'receive_date' => $date,
