@@ -164,7 +164,7 @@ class Import extends ImportBaseAction {
       }
       catch (\CRM_Core_Exception $e) {
         // skip, try the next one
-        \Civi::log()->error('import failed' . $e->getMessage());
+        \Civi::log()->error('import failed for ' . $contribution['invoice_id'] . ' '  . $e->getMessage());
       }
     }
   }

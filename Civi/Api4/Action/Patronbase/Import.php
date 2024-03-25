@@ -59,8 +59,7 @@ class Import extends ImportBaseAction {
           'payment_instrument_id:name' => $paymentInstrument,
           'contact_id' => $paymentType !== 'Cash' ? $this->getPatronBaseContactID() : $this->getContactID('Patronbase (cash)'),
           'line_item' => [],
-          // temporarily only include patronbase for cash.
-          'invoice_id' => $paymentType === 'Cash' ? 'patronbase_' . $key : $key,
+          'invoice_id' => 'patronbase_' . $key,
           'financial_type_id' => $financialTypeID,
           'source' => $key . ' Patronbase import ',
           'contribution_status_id:name' => 'Completed',
@@ -97,7 +96,7 @@ class Import extends ImportBaseAction {
       }
       catch (\CRM_Core_Exception $e) {
         // skip, try the next one
-        \Civi::log()->error('import failed' . $e->getMessage());
+        \Civi::log()->error('import failed for ' . $contribution['invoice_id'] . ' '  . $e->getMessage());
       }
     }
   }
