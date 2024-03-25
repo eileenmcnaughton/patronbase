@@ -147,7 +147,7 @@ abstract class ImportBaseAction extends AbstractAction {
 
 
   public function getDirectory(): string {
-    return $this->directory ?: \Civi::paths()->getPath('[civicrm.files]/upload/');
+    return $this->directory ?: \CRM_Core_Config::singleton()->uploadDir;
   }
 
 

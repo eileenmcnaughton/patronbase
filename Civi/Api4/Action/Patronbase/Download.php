@@ -70,7 +70,7 @@ class Download extends ImportBaseAction {
    * @return false|mixed|string
    */
   public function getPath() {
-    return \Civi::paths()->getPath('[civicrm.files]/upload/');
+    return \CRM_Core_Config::singleton()->uploadDir;
   }
 
 }
