@@ -48,6 +48,7 @@ class Download extends ImportBaseAction {
         if (!str_ends_with($from, '@mcnaughty.com')
           && !str_ends_with($from, '@bdo.co.nz')
           && !str_ends_with($from, '@wdc.govt.nz')
+          && !str_ends_with($from, 'hundertwasserartcentre.co.nz')
         ) {
           $store->markIgnored($key);
           continue;
