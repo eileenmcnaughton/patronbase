@@ -17,7 +17,8 @@ class Import extends ImportBaseAction {
    *
    * @param \Civi\Api4\Generic\Result $result
    *
-   * @throws \API_Exception
+   * @throws \CRM_Core_Exception
+   * @throws \League\Csv\Exception
    */
   public function _run(Result $result) {
     $path = $this->getDirectory() . '/ibis.csv';
@@ -28,8 +29,6 @@ class Import extends ImportBaseAction {
     $stmt = Statement::create()
       ->offset(0)
       ->limit(200000);
-
-    $patronBaseContactID = $this->getIbisContactID();
 
     $records = $stmt->process($csv);
     $contribution = [];
@@ -65,7 +64,7 @@ class Import extends ImportBaseAction {
           $record['line_total'] += $lastRecord['line_total'];
         }
         if ($lastRecord['payment_type'] === 'EFT' && $record['payment_type'] === 'Cash') {
-          // Cash needs to come first cos there could be cash-out involved so we need
+          // Cash needs to come first cos there could be cash-out involved, so we need
           // to start with cash & allocate it all & then allocated EFT as needed.
           $removedRecord = array_pop($rows);
           $rows[] = $record;
@@ -78,17 +77,19 @@ class Import extends ImportBaseAction {
       $rows[] = $record;
     }
     $lineItems = [];
-    $partialLines = [];
+     $partialLines = [];
     foreach ($rows as $record) {
       $date = $record['date'];
       if ($record['Line type'] === 'Pay') {
         // The last line in each transaction is the payment line.
         $paymentType = $record['Description'] === '1. Cash' ? 'Cash' : 'EFT';
         $contribution['payment_instrument_id:name'] = $paymentType;
+        $contribution['receive_date'] = $date;
         $contribution['contact_id'] = $paymentType === 'Cash' ? $this->getIbisCashContactID() : $this->getIbisContactID();
         $key = $date . ' - ' . $paymentType;
         $contribution['source'] = $key . ' Ibis import ';
         $contribution['invoice_id'] = 'ibis_' . $key;
+        $contribution['financial_type_id'] = $this->getDefaultFinancialTypeID();
 
         if (!array_key_exists($key, $contributions)) {
           $contributions[$key] = $contribution;
@@ -126,15 +127,9 @@ class Import extends ImportBaseAction {
       }
       else {
         $partialLines = [];
-        if (empty($contribution)) {
-          $contribution = [
-            'receive_date' => $date,
-            'contact_id' => $patronBaseContactID,
-            'line_items' => [],
-            'financial_type_id' => $this->getDefaultFinancialTypeID(),
-            'contribution_status_id:name' => 'Completed',
-          ];
-        }
+        $contribution += [
+          'line_items' => [],
+        ];
         $details = array_filter([
           $record['PLU'],
           $record['Description'],
@@ -167,7 +162,7 @@ class Import extends ImportBaseAction {
     }
   }
 
-  public function fields() {
+  public function fields(): array {
     return [];
   }
 
