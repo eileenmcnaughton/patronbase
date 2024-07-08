@@ -49,7 +49,7 @@ class Import extends ImportBaseAction {
         $paymentInstrument = 'Credit Card';
       }
       $key = $date . ' - ' . $paymentType;
-      $financialTypeID = empty($record['Account Code']) ? $default : $this->getFinancialAccount($record['Account Code'], $record['Description']);
+      $financialTypeID = empty($record['Account Code']) ? $default : $this->getFinancialAccount(trim($record['Account Code']), $record['Description']);
       if ($financialTypeID === $this->getDefaultFinancialTypeID() && $paymentType === 'Online Card') {
         $financialTypeID = $this->getFinancialAccount('30023-1138', 'Online sales');
       }
