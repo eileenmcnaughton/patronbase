@@ -49,6 +49,7 @@ class Import extends ImportBaseAction {
         $lineTotal = -substr($lineTotal, 1, -1);
       }
       $record['line_total'] = (float) $lineTotal;
+      $record['rounding'] = 0;
 
       $quantity = $record['Units'];
       if (str_starts_with($quantity, '(')) {
@@ -56,11 +57,16 @@ class Import extends ImportBaseAction {
       }
       $record['quantity'] = (float) $quantity;
       $record['date'] = date('Ymd', strtotime($record['Date']));
+      if ($record['payment_type'] === 'Cash' && $record['line_total'] >= -.1 && $record['line_total'] <= .1) {
+        // This is a rounding.
+        $record['rounding'] = $record['line_total'];
+      }
       if ($record['payment_type'] && !empty($lastRecord['payment_type'])) {
         if ($lastRecord['payment_type'] === $record['payment_type']) {
           // 2 payment rows for the same type, combine
           // Remove the last record
           $lastRecord = array_pop($rows);
+          $record['rounding'] += $lastRecord['rounding'];
           $record['line_total'] += $lastRecord['line_total'];
         }
         if ($lastRecord['payment_type'] === 'EFT' && $record['payment_type'] === 'Cash') {
@@ -77,7 +83,7 @@ class Import extends ImportBaseAction {
       $rows[] = $record;
     }
     $lineItems = [];
-     $partialLines = [];
+    $partialLines = [];
     foreach ($rows as $record) {
       $date = $record['date'];
       if ($record['Line type'] === 'Pay') {
@@ -90,11 +96,21 @@ class Import extends ImportBaseAction {
         $contribution['source'] = $key . ' Ibis import ';
         $contribution['invoice_id'] = 'ibis_' . $key;
         $contribution['financial_type_id'] = $this->getDefaultFinancialTypeID();
+        if (!empty($record['rounding'])) {
+          $lineItems[] = [
+            'label' => 'Rounding',
+            'field_title' => 'Rounding',
+            'unit_price' => $record['rounding'],
+            'qty' => 1,
+            'line_total' => $record['rounding'],
+            'financial_type_id' => $this->getRoundingFinancialTypeID(),
+          ];
+        }
 
         if (!array_key_exists($key, $contributions)) {
           $contributions[$key] = $contribution;
         }
-        $toAllocate = $record['line_total'];
+        $toAllocate = $record['line_total'] - $record['rounding'];
 
         foreach (array_merge($lineItems, $partialLines) as $lineItem) {
           if (round($toAllocate, 2) !== 0.0) {

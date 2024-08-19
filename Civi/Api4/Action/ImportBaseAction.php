@@ -88,6 +88,14 @@ abstract class ImportBaseAction extends AbstractAction {
   }
 
   /**
+   * @return int
+   */
+  public function getRoundingFinancialTypeID(): int {
+    // hard-coded - sorry
+    return $this->getFinancialAccount('860', 'rounding');
+  }
+
+  /**
    * @throws \CRM_Core_Exception
    */
   public function getFinancialAccount(string $code, string $label) {
