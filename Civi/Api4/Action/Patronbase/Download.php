@@ -56,6 +56,7 @@ class Download extends ImportBaseAction {
         $attachments = $incomingMail->getAttachments();
         if (count($attachments) === 1) {
           $fileName = basename($attachments[0]['fullName']);
+          \Civi::log('ibis')->info('storing file ' . $path . $fileName);
           rename($attachments[0]['fullName'], $path . $fileName);
         }
         $store->markProcessed($key);
