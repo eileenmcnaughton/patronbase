@@ -59,10 +59,13 @@ class Download extends ImportBaseAction {
         }
         $attachments = $incomingMail->getAttachments();
         \Civi::log('ibis')->info('processing mail from ' . $from . ' with attachment count: ' . count($attachments));
-        if (count($attachments) === 1) {
-          $fileName = basename($attachments[0]['fullName']);
-          \Civi::log('ibis')->info('storing file ' . $path . $fileName);
-          rename($attachments[0]['fullName'], $path . $fileName);
+        foreach ($attachments as $attachment) {
+          $fileName = basename($attachment['fullName']);
+          \Civi::log('ibis')->info('processing attachment' . $fileName);
+          if (in_array(['ibis.csv', 'patronbase.csv'], $fileName, TRUE)) {
+            \Civi::log('ibis')->info('storing file ' . $path . $fileName);
+            rename($attachments[0]['fullName'], $path . $fileName);
+          }
         }
         $store->markProcessed($key);
       }
