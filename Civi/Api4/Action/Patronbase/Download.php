@@ -21,7 +21,7 @@ class Download extends ImportBaseAction {
    */
   public function _run(Result $result) {
     $path = $this->getPath();
-    \Civi::log('ibis')->warning('starting download');
+    \Civi::log('ibis')->info('starting download');
     // retrieve the emails
     try {
       $store = \CRM_Mailing_MailStore::getStore('mail@yeswhangarei.co.nz');
