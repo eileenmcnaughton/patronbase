@@ -21,7 +21,7 @@ class Download extends ImportBaseAction {
    */
   public function _run(Result $result) {
     $path = $this->getPath();
-
+    \Civi::log('ibis')->warning('starting download');
     // retrieve the emails
     try {
       $store = \CRM_Mailing_MailStore::getStore('mail@yeswhangarei.co.nz');
@@ -30,6 +30,7 @@ class Download extends ImportBaseAction {
       $message = ts('Could not connect to MailStore');
       $message .= ts('Error message: ');
       $message .= '<pre>' . $e->getMessage() . '</pre><p>';
+      \Civi::log('ibis')->error('connection failure ' . $e->getMessage());
       throw new \CRM_Core_Exception($message);
     }
 
@@ -57,6 +58,7 @@ class Download extends ImportBaseAction {
           continue;
         }
         $attachments = $incomingMail->getAttachments();
+        \Civi::log('ibis')->info('processing mail from ' . $from . ' with attachment count: ' . count($attachments));
         if (count($attachments) === 1) {
           $fileName = basename($attachments[0]['fullName']);
           \Civi::log('ibis')->info('storing file ' . $path . $fileName);
