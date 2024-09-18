@@ -67,6 +67,7 @@ class Download extends ImportBaseAction {
         $store->markProcessed($key);
       }
     }
+    \Civi::log('ibis')->info('finished download');
   }
 
   public function fields() {
