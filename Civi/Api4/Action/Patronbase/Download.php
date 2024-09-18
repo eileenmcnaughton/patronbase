@@ -67,7 +67,7 @@ class Download extends ImportBaseAction {
             rename($attachments[0]['fullName'], $path . $fileName);
           }
           else {
-            \Civi::log('ibis')->info('skipping file ' . $path);
+            \Civi::log('ibis')->info('skipping file ' . $attachment['fullName']);
           }
         }
         $store->markProcessed($key);
