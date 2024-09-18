@@ -30,3 +30,16 @@ function patronbase_civicrm_install(): void {
 function patronbase_civicrm_enable(): void {
   _patronbase_civix_civicrm_enable();
 }
+
+function patronbase_civicrm_accountPushAlterMapped($entity, &$data, &$save, &$params) {
+  if ($entity === 'invoice') {
+    foreach ($data['LineItems']['LineItem'] as &$lineItem) {
+      $lineItem['Tracking'] = [
+        [
+          'Name' => 'Division',
+          'Option' => 'HAC',
+        ],
+      ];
+    }
+  }
+}
