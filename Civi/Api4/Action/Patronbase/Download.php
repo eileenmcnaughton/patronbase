@@ -40,6 +40,7 @@ class Download extends ImportBaseAction {
           $incomingMail = new \CRM_Utils_Mail_IncomingMail($mail, (string) 'yeswhangarei.co.nz', (string) 'mail+');
         }
         catch (\CRM_Core_Exception $e) {
+          \Civi::log('ibis')->warning('ignoring mail ' . $e->getMessage());
           $store->markIgnored($key);
           continue;
         }
@@ -50,6 +51,8 @@ class Download extends ImportBaseAction {
           && !str_ends_with($from, '@wdc.govt.nz')
           && !str_ends_with($from, 'hundertwasserartcentre.co.nz')
         ) {
+
+          \Civi::log('ibis')->warning('ignoring mail from ' . $from);
           $store->markIgnored($key);
           continue;
         }
