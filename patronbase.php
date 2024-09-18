@@ -32,12 +32,29 @@ function patronbase_civicrm_enable(): void {
 }
 
 function patronbase_civicrm_accountPushAlterMapped($entity, &$data, &$save, &$params) {
+  \Civi::log('ibis')->info('xero hook called with entity: ' . $entity);
   if ($entity === 'invoice') {
-    foreach ($data['LineItems']['LineItem'] as &$lineItem) {
+    foreach ($params['LineItems']['LineItem'] as &$lineItem) {
+      $accounting = substr($lineItem['AccountCode'], 0, 5);
+      $mapping = [
+        '30011' => '30011 - Hundertwasser Operations',
+        '30023' => '30023 - HAC Retail',
+        '30020' => '30020 - HAC Public Engagement',
+      ];
+      \Civi::log()->info('code is ' . $accounting);
+      \Civi::log($mapping[$accounting]);
       $lineItem['Tracking'] = [
-        [
+        'TrackingCategory' => [
           'Name' => 'Division',
           'Option' => 'HAC',
+          "TrackingCategoryID" => "d358c4cd-7eff-4446-a874-226648e87854",
+          "TrackingOptionID" => "5e73c2b0-317b-4edb-a9b5-8a57510165a8",
+        ],
+        // The ~ should be removed...
+        'TrackingCategory~' => [
+          "Name" => "Cost Centre",
+          "Option" =>  $mapping[$accounting],
+          "TrackingCategoryID" =>  "503d628a-16df-45cf-99af-54aac9d06e5a",
         ],
       ];
     }

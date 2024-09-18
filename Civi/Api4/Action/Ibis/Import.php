@@ -147,6 +147,7 @@ class Import extends ImportBaseAction {
           'line_items' => [],
         ];
         $details = array_filter([
+          $record['Trans #'] ?? NULL,
           $record['PLU'],
           $record['Description'],
           $record['Item type'],
