@@ -12,6 +12,8 @@ use League\Csv\Statement;
  */
 class Import extends ImportBaseAction {
 
+  protected string $fileName = 'ibis.csv';
+
   /**
    * @inheritDoc
    *
@@ -20,17 +22,8 @@ class Import extends ImportBaseAction {
    * @throws \CRM_Core_Exception
    * @throws \League\Csv\Exception
    */
-  public function _run(Result $result) {
-    $path = $this->getDirectory() . '/ibis.csv';
-    \Civi::log('ibis')->info('loading file ' . $path);
-    $csv = Reader::createFromPath($path, 'r');
-    $csv->setHeaderOffset(0); //set the CSV header offset
-
-    $stmt = Statement::create()
-      ->offset(0)
-      ->limit(200000);
-
-    $records = $stmt->process($csv);
+  public function _run(Result $result): void {
+    $records = $this->getRecords();
     $contribution = [];
     $contributions = [];
     $rows = [];
@@ -41,6 +34,14 @@ class Import extends ImportBaseAction {
         continue;
       }
       $record['payment_type'] = $record['Line type'] !== 'Pay' ? '' : ($record['Description'] === '1. Cash' ? 'Cash' : 'EFT');
+      if ($record['payment_type'] && $record['Till'] === 'online') {
+        $record['payment_type'] = 'Online Card';
+      }
+      $date = date('Ymd', strtotime($record['Date']));
+      $hourMinute = (int) date('Hi', strtotime(str_replace('/', '-', $record['Time'])));
+      if ($hourMinute > 2200) {
+        $date = date('Ymd', strtotime('+ 1 day', strtotime($date)));
+      }
       $lineTotal = \CRM_Utils_Rule::cleanMoney($record['Amount inc']);
       if (str_starts_with($lineTotal, '(')) {
         $lineTotal = -substr($lineTotal, 1, -1);
@@ -56,7 +57,7 @@ class Import extends ImportBaseAction {
         $quantity = substr($quantity, 1, -1);
       }
       $record['quantity'] = (float) $quantity;
-      $record['date'] = date('Ymd', strtotime($record['Date']));
+      $record['date'] = $date;
       if ($record['payment_type'] === 'Cash' && $record['line_total'] >= -.1 && $record['line_total'] <= .1) {
         // This is a rounding.
         $record['rounding'] = $record['line_total'];
@@ -88,7 +89,7 @@ class Import extends ImportBaseAction {
       $date = $record['date'];
       if ($record['Line type'] === 'Pay') {
         // The last line in each transaction is the payment line.
-        $paymentType = $record['Description'] === '1. Cash' ? 'Cash' : 'EFT';
+        $paymentType = $this->getPaymentType($record);
         $contribution['payment_instrument_id:name'] = $paymentType;
         $contribution['receive_date'] = $date;
         $contribution['contact_id'] = $paymentType === 'Cash' ? $this->getIbisCashContactID() : $this->getIbisContactID();
@@ -123,9 +124,12 @@ class Import extends ImportBaseAction {
                 // This payment covers part of the line,
                 $lineItem['label'] = 'split payment ' . $lineItem['label'];
                 $partialLine = $lineItem;
-                $partialLine['line_total'] += $record['line_total'];
+                // We have a line where the amount to pay is great than the remaining
+                // amount to allocate - so the diff goes to the partial line
+                $lineItem['line_total'] -= $diff;
+                $partialLine['line_total'] = $diff;
+
                 $partialLine['unit_price'] = $partialLine['line_total'] / $partialLine['qty'];
-                $lineItem['line_total'] -= $partialLine['line_total'];
                 $lineItem['unit_price'] = $lineItem['line_total'] / $lineItem['qty'];
                 $contributions[$key]['line_items'][]['line_item'][] = $lineItem;
                 $partialLines[] = $partialLine;
@@ -152,14 +156,25 @@ class Import extends ImportBaseAction {
           $record['Description'],
           $record['Item type'],
         ]);
-
+        $financialTypeID = $this->getDefaultFinancialTypeID();
+        if ($record['Item type'] === 'Reservation') {
+          $financialTypeID =  $this->getFinancialAccount('30011-1117', 'Admissions');
+        }
+        elseif ($record['Till'] === 'online') {
+          if ($record['Item type'] === 'Non stock') {
+            $financialTypeID = $this->getFinancialAccount('30023-1192', 'Postage');
+          }
+          else {
+            $financialTypeID = $this->getFinancialAccount('30023-1138', 'Online sales');
+          }
+        }
         $lineItems[] = [
             'label' => implode(' - ', $details),
             'field_title' => implode('-', $details),
             'unit_price' => $record['line_total'] / $record['quantity'],
             'qty' => $record['quantity'],
             'line_total' => $record['line_total'],
-            'financial_type_id' => $this->getDefaultFinancialTypeID(),
+            'financial_type_id' => $financialTypeID,
         ];
       }
     }
@@ -188,4 +203,64 @@ class Import extends ImportBaseAction {
     return $this;
   }
 
+  /**
+   * @return string
+   */
+  public function getPath(): string {
+    $path = $this->getDirectory() . '/' . $this->fileName;
+    \Civi::log('ibis')->info('loading file ' . $path);
+    return $path;
+  }
+
+  /**
+   * @return \League\Csv\Reader
+   * @throws \League\Csv\Exception
+   */
+  public function getCsv(): Reader {
+    $path = $this->getPath();
+    $csv = Reader::createFromPath($path, 'r');
+    $csv->setHeaderOffset(0);
+    $csv->addStreamFilter('convert.iconv.ASCII/UTF-8');
+    return $csv; //set the CSV header offset
+  }
+
+  /**
+   * @return \League\Csv\TabularDataReader
+   * @throws \League\Csv\Exception
+   */
+  public function getRecords(): \League\Csv\TabularDataReader {
+    $csv = $this->getCsv();
+
+    $stmt = Statement::create()
+      ->offset(0)
+      ->limit(200000);
+
+    $records = $stmt->process($csv);
+    return $records;
+  }
+
+  /**
+   * @param string $a
+   *
+   * @return string|int
+   */
+  public function getCurrencyAmount(string $a) {
+    return str_replace(['$', ','], '', $a) ?: 0;
+  }
+
+  /**
+   * @param mixed $record
+   *
+   * @return string
+   */
+  public function getPaymentType(mixed $record): string {
+    if ($record['Till'] === 'online') {
+      return 'Credit Card';
+    }
+    if ($record['Description'] === '5. Other') {
+      return 'Adjustment';
+    }
+    return $record['Description'] === '1. Cash' ? 'Cash' : 'EFT';
+
+  }
 }
