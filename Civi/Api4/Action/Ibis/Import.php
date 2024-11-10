@@ -28,19 +28,8 @@ class Import extends ImportBaseAction {
    */
   public function _run(Result $result): void {
     $records = [];
+    $lastRecord = ['payment_type' => 'first row'];
     foreach ($this->getRecords() as $record) {
-      $records[] = $record;
-    }
-    uasort($records, [$this, 'cashFirst']);
-    $contribution = [];
-    $contributions = [];
-    $rows = [];
-
-    foreach ($records as $record) {
-      if ($record['Status'] !== 'Posted') {
-        // wtf is this - skip
-        continue;
-      }
       $record['payment_type'] = $record['Line type'] !== 'Pay' ? '' : ($record['Description'] === '1. Cash' ? 'Cash' : 'EFT');
       if ($record['payment_type'] && $record['Till'] === 'online') {
         $record['payment_type'] = 'Online Card';
@@ -69,6 +58,27 @@ class Import extends ImportBaseAction {
       if ($record['payment_type'] === 'Cash' && $record['line_total'] >= -.1 && $record['line_total'] <= .1) {
         // This is a rounding.
         $record['rounding'] = $record['line_total'];
+      }
+
+      if ($lastRecord['payment_type'] === $record['payment_type']) {
+        // 2 payment rows for the same type, combine
+        // Remove the last record
+        $lastRecord = array_pop($records);
+        $record['rounding'] += $lastRecord['rounding'];
+        $record['line_total'] += $lastRecord['line_total'];
+      }
+      $records[] = $record;
+      $lastRecord = $record;
+    }
+
+    $contribution = [];
+    $contributions = [];
+    $rows = [];
+
+    foreach ($records as $record) {
+      if ($record['Status'] !== 'Posted') {
+        // wtf is this - skip
+        continue;
       }
       if ($record['payment_type'] && !empty($lastRecord['payment_type'])) {
         if ($lastRecord['payment_type'] === $record['payment_type']) {
@@ -200,19 +210,6 @@ class Import extends ImportBaseAction {
         \Civi::log()->error('import failed for ' . $contribution['invoice_id'] . ' ' . $e->getMessage());
       }
     }
-  }
-
-  public function cashFirst(array $a, array $b): int {
-    if ($a['Line type'] === 'Item' || $b['Line type'] === 'Item') {
-      return -1;
-    }
-    if ($a['Description'] === '1. Cash') {
-      return -1;
-    }
-    if ($b['Description'] === '1. Cash') {
-      return 1;
-    }
-    return -1;
   }
 
   public function fields(): array {
