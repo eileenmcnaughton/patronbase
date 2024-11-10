@@ -62,7 +62,7 @@ class Download extends ImportBaseAction {
         foreach ($attachments as $attachment) {
           $fileName = basename($attachment['fullName']);
           \Civi::log('ibis')->info('processing attachment ' . $fileName);
-          if (in_array($fileName, ['ibis.csv', 'patronbase.csv'], TRUE)) {
+          if (in_array($fileName, ['ibis.csv', 'patronbase.csv', 'ibis_stock.csv', 'ibis_stock_value.csv', 'ibis_reservations.csv', 'ibis_sales.csv'], TRUE)) {
             \Civi::log('ibis')->info('storing file ' . $path . $fileName);
             rename($attachment['fullName'], $path . $fileName);
           }
