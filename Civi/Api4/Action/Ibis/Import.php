@@ -8,10 +8,14 @@ use League\Csv\Statement;
 
 /**
  *
+ * @method $this setFileName(string $fileName)
  * @package Civi\Api4
  */
 class Import extends ImportBaseAction {
 
+  /**
+   * @var string
+   */
   protected string $fileName = 'ibis.csv';
 
   /**
@@ -23,7 +27,11 @@ class Import extends ImportBaseAction {
    * @throws \League\Csv\Exception
    */
   public function _run(Result $result): void {
-    $records = $this->getRecords();
+    $records = [];
+    foreach ($this->getRecords() as $record) {
+      $records[] = $record;
+    }
+    uasort($records, [$this, 'cashFirst']);
     $contribution = [];
     $contributions = [];
     $rows = [];
@@ -169,12 +177,12 @@ class Import extends ImportBaseAction {
           }
         }
         $lineItems[] = [
-            'label' => implode(' - ', $details),
-            'field_title' => implode('-', $details),
-            'unit_price' => $record['line_total'] / $record['quantity'],
-            'qty' => $record['quantity'],
-            'line_total' => $record['line_total'],
-            'financial_type_id' => $financialTypeID,
+          'label' => implode(' - ', $details),
+          'field_title' => implode('-', $details),
+          'unit_price' => $record['line_total'] / $record['quantity'],
+          'qty' => $record['quantity'],
+          'line_total' => $record['line_total'],
+          'financial_type_id' => $financialTypeID,
         ];
       }
     }
@@ -189,9 +197,22 @@ class Import extends ImportBaseAction {
       }
       catch (\CRM_Core_Exception $e) {
         // skip, try the next one
-        \Civi::log()->error('import failed for ' . $contribution['invoice_id'] . ' '  . $e->getMessage());
+        \Civi::log()->error('import failed for ' . $contribution['invoice_id'] . ' ' . $e->getMessage());
       }
     }
+  }
+
+  public function cashFirst(array $a, array $b): int {
+    if ($a['Line type'] === 'Item' || $b['Line type'] === 'Item') {
+      return -1;
+    }
+    if ($a['Description'] === '1. Cash') {
+      return -1;
+    }
+    if ($b['Description'] === '1. Cash') {
+      return 1;
+    }
+    return -1;
   }
 
   public function fields(): array {
@@ -221,7 +242,7 @@ class Import extends ImportBaseAction {
     $csv = Reader::createFromPath($path, 'r');
     $csv->setHeaderOffset(0);
     $csv->addStreamFilter('convert.iconv.ASCII/UTF-8');
-    return $csv; //set the CSV header offset
+    return $csv;
   }
 
   /**

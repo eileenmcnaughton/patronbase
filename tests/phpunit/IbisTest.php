@@ -14,13 +14,15 @@ use PHPUnit\Framework\TestCase;
  * FIXME - Add test description.
  *
  * Tips:
- *  - With HookInterface, you may implement CiviCRM hooks directly in the test class.
- *    Simply create corresponding functions (e.g. "hook_civicrm_post(...)" or similar).
- *  - With TransactionalInterface, any data changes made by setUp() or test****() functions will
- *    rollback automatically -- as long as you don't manipulate schema or truncate tables.
- *    If this test needs to manipulate schema or truncate tables, then either:
- *       a. Do all that using setupHeadless() and Civi\Test.
- *       b. Disable TransactionalInterface, and handle all setup/teardown yourself.
+ *  - With HookInterface, you may implement CiviCRM hooks directly in the test
+ * class. Simply create corresponding functions (e.g. "hook_civicrm_post(...)"
+ * or similar).
+ *  - With TransactionalInterface, any data changes made by setUp() or
+ * test****() functions will rollback automatically -- as long as you don't
+ * manipulate schema or truncate tables. If this test needs to manipulate
+ * schema or truncate tables, then either: a. Do all that using setupHeadless()
+ * and Civi\Test. b. Disable TransactionalInterface, and handle all
+ * setup/teardown yourself.
  *
  * @group headless
  */
@@ -29,7 +31,8 @@ class IbisTest extends TestCase implements HeadlessInterface, HookInterface, Tra
   /**
    * Setup used when HeadlessInterface is implemented.
    *
-   * Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
+   * Civi\Test has many helpers, like install(), uninstall(), sql(), and
+   * sqlFile().
    *
    * @link https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
    *
@@ -68,6 +71,22 @@ class IbisTest extends TestCase implements HeadlessInterface, HookInterface, Tra
       ->execute();
     $this->assertCount(1, $contributions);
     $this->assertEquals(237.80, $contributions->first()['total_amount']);
+  }
+
+  public function testImportTriplePaymentRows(): void {
+    Ibis::import(FALSE)->setDirectory(__DIR__ . '/data')
+      ->setFileName('ibis_triple.csv')->execute();
+    $contribution = Contribution::get(FALSE)
+      ->addSelect('*', 'payment_instrument_id:name')
+      ->addWhere('contact_id.organization_name', '=', 'Ibis')
+      ->execute()->first();
+    $this->assertEquals(30, $contribution['total_amount']);
+
+    $cashContributions = Contribution::get(FALSE)
+      ->addSelect('*', 'payment_instrument_id:name')
+      ->addWhere('contact_id.organization_name', '=', 'Ibis (Cash)')
+      ->execute()->first();
+    $this->assertEquals(15, $cashContributions['total_amount']);
   }
 
 }
