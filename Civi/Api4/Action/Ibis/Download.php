@@ -202,13 +202,6 @@ class Download extends ImportBaseAction {
     ]);
 
     $this->writeCSV('ibis_sales.csv', $salesResponse);
-    $string = "BrowserTabGUID=fb46379b-db04-4eb1-8f67-7055434bbded&ViewStyleE=GridListView&ShowTime=False&ClassName=RptRetailAudit&ShowDates=StartAndEnd&ExportFormat=4&ViewName=CIvi-export&PageID=reports.RetailAudit&ReportID=fb46379b-db04-4eb1-8f67-7055434bbded.list&NewViewName=Civi-export&Notes=&DeleteOnSave=false&FormAction=SaveView&daterange=31 Oct 2024 - 31 Oct 2024";
-
-    $salesResponse = $this->client->post('reports/RetailSales', [
-      'body' => $string,
-    ]);
-    $this->writeCSV('ibis_t.csv', $salesResponse);
-
   }
 
   /**
