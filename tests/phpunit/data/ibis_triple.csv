@@ -1,0 +1,5 @@
+Date,Time,Line type,PLU,Description,Status,Transaction type,Void,Item type,Location,Till,User,Amount ex,Tax,Units,Amount inc
+Thu 7 Mar 2024,12:26 PM,Item,2188,"PD Hundertwasser In NZ",Posted,Sale,False,Stock,Shop,RETAIL1,LC,$39.13,$5.87,1,$45
+Thu 7 Mar 2024,12:26 PM,Pay,,2. Eftpos,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,($30.00)
+Thu 7 Mar 2024,12:26 PM,Pay,,1. Cash,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,($50.00)
+Thu 7 Mar 2024,12:26 PM,Pay,,1. Cash,Posted,Sale,False,,Shop,RETAIL1,LC,$0.00,$0.00,0,$35.00
